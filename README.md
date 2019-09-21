@@ -1,3 +1,4 @@
-# Keithley2600
+# SMUWL
 
-Wolfram Language package for Keithley 2600 series instruments. 
+**S**ource **M**easure **U**nit interface for **W**olfram **L**anguage
+
