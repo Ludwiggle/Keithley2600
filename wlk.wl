@@ -6,14 +6,18 @@ k = SocketConnect@kAddr
 
 kw = WriteString[k, "\n"<>#<>"\n"]&
 
-kr = Block[{$RecursionLimit = 20},
-           If[SocketReadyQ@k
-              , SocketReadMessage@k~Sow~#
-              , Wait@.01; kr]
-          ]&
+kr := If[SocketReadyQ@k
+         , Sow @ SocketReadMessage@k
+         , kr
+        ]
+                
 
-krm = ( kw["print(" <> #1 <> ")"]; kr@#2) &
+krm@s_ := ( "print(" <> s <> ")" // kw; 
+            Block[{$RecursionLimit = 100}, kr] 
+          ) 
 
 
 Do[ "smua.measure.i()" // krm
 ] // Reap
+
+
