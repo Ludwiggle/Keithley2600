@@ -3,23 +3,25 @@
 k = SocketConnect @ "172.19.227.177:5025"
 
 Echo@k
-
-kw = WriteString[k, "\n"<>#<>"\n"]&
-
-srm@l_ := {AbsoluteTime[]-t0, ByteArrayToString @ SocketReadMessage @ k} ~Sow~ l
+Echo@FindDevices@"GPIO"
 
 
-krm[s_,l_] := ("print("<>s<>")" // kw;
+kw = WriteString[k, #<>"\n"]&
 
-                If[SocketReadyQ @ k
-                   , srm@l
-                   , While[Not @ SocketReadyQ @ k, Pause@0.001]; 
-                     srm@l]
-              )
+srm := SocketReadMessage @ k // ByteArrayToString // StringTrim //  Internal`StringToDouble 
+
+
+krm@s_ := ("print("<>s<>")" // kw;
+
+           If[SocketReadyQ @ k
+              , srm
+              , While[Not @ SocketReadyQ @ k, Pause@0.001]; 
+                srm]
+          )
               
               
-pinst = Thread[#1 -> #2] & @@ {{4, 17, 22}, #} & /@ Tuples[{0, 1}, 3]
-ilab = "Ia" <> # & /@ ToString /@ Range@8
+pinStLab = Thread[#1 -> #2] & @@ {{4, 17, 22}, #} & /@ Tuples[{0, 1}, 3] // 
+        Thread @ {#, "Ia" <> # & /@ ToString /@ Range@Length@#} &
 
 
 "display.smua.measure.func = display.MEASURE_DCAMPS" // kw
@@ -28,19 +30,17 @@ ilab = "Ia" <> # & /@ ToString /@ Range@8
 
 "smua.source.output = smua.OUTPUT_ON" // kw
 
-Pause@0.5
+
+Echo@"measure start"
 
 t0 = AbsoluteTime[]
 
 res = 
- Do[( DeviceWrite["GPIO", First@#]; 
-      Pause@.1; 
-      krm["smua.measure.i() ", Last@#]
-    ) &~Scan~Thread@{pinst, ilab};
+ Do[(DeviceWrite["GPIO", First@#]; Pause@.1; 
+     N@{AbsoluteTime[]-t0, krm@"smua.measure.i()"}~Sow~Last@#
+    )& ~Scan~ pinStLab;
     
-    Pause@1
-    
-   , 3] // Reap // Last
+   , 100] // Reap // Last
    
    
 Export["res.wl",res]
