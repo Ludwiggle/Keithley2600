@@ -6,7 +6,6 @@ kw = WriteString[k, #<>"\n"]&
 
 srm := SocketReadMessage @ k // ByteArrayToString // StringTrim //  Internal`StringToDouble 
 
-
 krm@s_ := 
 ("print("<>s<>")" // kw;
   If[SocketReadyQ @ k
