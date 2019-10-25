@@ -1,4 +1,3 @@
-#!/usr/bin/wolframscript
 
 k = SocketConnect @ "172.19.227.177:5025"
 
